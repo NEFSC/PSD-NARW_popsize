@@ -1,0 +1,111 @@
+
+whale.code.pop <- nimbleCode( {
+
+#model {
+  
+  pi.female ~ dbeta(5, 5)      ### probability of individual being female
+  
+  a0 ~ dlogis(0,1)             ### logit-scale intercept for sighting prob (p)
+  a.female ~ dunif(-5, 5)
+  
+  b0 ~ dlogis(0,1)             ### logit-scale intercept for survival (phi)
+  b.female ~ dunif(-5, 5)
+  b.age ~ dunif(-5, 5)
+  b.regime ~ dunif(-5, 5)
+  
+  sigma.p.t ~ dunif(0, 10)       ###  prior sd of random year effect on p
+  sigma.p.i ~ dunif(0, 10)       ###  prior sd of random individual effect on p
+  sigma.phi ~ dunif(0, 10)       ###  prior sd of random year effect on phi
+  
+  for (i in 1:(M-1)) {
+    epsilon.p.i[i] ~ dnorm(0, sd=sigma.p.i) ### random individual effect on p
+  }
+  for (t in 1:(n.occasions - 2)) {
+    epsilon.phi.t[t] ~ dnorm(0, sd=sigma.phi)  ### random year effect on phi
+    epsilon.p.t[t] ~ dnorm(0, sd=sigma.p.t)    ### random year effect on p
+  }
+  #### sum-to-zero epsilons
+  epsilon.p.i[M] <- -sum(epsilon.p.i[1:(M-1)])  
+  epsilon.phi.t[n.occasions-1] <- -sum(epsilon.phi.t[1:(n.occasions-2)])
+  epsilon.p.t[n.occasions-1] <- -sum(epsilon.p.t[1:(n.occasions-2)])
+
+  # Prior for entry probabilities
+  for (t in 1:(n.occasions - 1)) {
+    gamma[t] ~ dunif(0, 1)                        
+  } #t
+  
+  #########  Probability models
+  for (i in 1:M) {
+    Sex[i] ~ dbern(pi.female)
+    for (t in 1:(n.occasions - 1)) {
+      logit(phi[i,t]) <- b0 + b.age * Age[i,t] + b.female * Sex[i] * Adult[i,t] + b.regime *
+        Regime[t] + epsilon.phi.t[t]
+      logit(p[i,t]) <- a0 + a.female * (Sex[i]) + epsilon.p.t[t] + epsilon.p.i[i]
+    } #t
+  } #i
+  ### Define state-transition and observation matrices
+  for (i in 1:M) {
+    # Given state S(t), define probabilities of S(t+1) 
+    for (t in 1:(n.occasions - 1)) {
+      ps[1,i,t,1] <- 1 - gamma[t]
+      ps[1,i,t,2] <- gamma[t]
+      ps[1,i,t,3] <- 0
+      ps[2,i,t,1] <- 0
+      ps[2,i,t,2] <- phi[i,t]
+      ps[2,i,t,3] <- 1 - phi[i,t]
+      ps[3,i,t,1] <- 0
+      ps[3,i,t,2] <- 0
+      ps[3,i,t,3] <- 1
+      # Given state S(t), define probabilities of O(t)
+      po[1,i,t,1] <- 0
+      po[1,i,t,2] <- 1
+      po[2,i,t,1] <- p[i,t]
+      po[2,i,t,2] <- 1 - p[i,t]
+      po[3,i,t,1] <- 0
+      po[3,i,t,2] <- 1
+    } #t
+  } #i
+
+  # Likelihood
+  for (i in 1:M) {
+    # Define latent state at first occasion.
+    z[i, 1] ~ dcat(px[1:3])   # all M individuals are known z=1 at t=1
+    for (t in 2:n.occasions) {
+      # State process: draw S(t) given S(t-1)
+      z[i,t] ~ dcat(ps[z[i,t-1],i,t-1,1:3])
+      # Observation process: draw O(t) given S(t)
+      y[i,t] ~ dcat(po[z[i,t],i,t-1,1:2])
+    } #t
+  } #i
+  # Calculate derived population parameters
+  for (t in 1:(n.occasions - 1)) {
+    qgamma[t] <- 1 - gamma[t]
+  }
+  cprob[1] <- gamma[1]
+  for (t in 2:(n.occasions - 1)) {
+    cprob[t] <- gamma[t] * prod(qgamma[1:(t-1)])
+  } #t
+  psi <- sum(cprob[1:(n.occasions-1)])            # Inclusion probability
+  for (t in 1:(n.occasions - 1)) {
+    entry[t] <- cprob[t] / psi      # Entry probability
+  } #t
+  for (i in 1:M) {
+    for (t in 2:n.occasions) {
+      al[i,t-1] <- equals(z[i,t], 2)
+      dead[i,t-1] <- equals(z[i,t], 3) * equals(z[i,t-1], 2)
+    } #t
+    for (t in 1:(n.occasions - 1)) {
+      d[i,t] <- equals(z[i,t] - al[i,t], 0)
+    } #t
+    aliveT[i] <- al[i,(n.occasions-1)]
+  } #i
+  for (t in 1:(n.occasions - 1)) {
+    N[t] <- sum(al[1:M,t])
+    NF[t] <- sum(al[1:M,t] * Sex[1:M])
+    NM[t] <- sum(al[1:M,t] * (1-Sex[1:M]))
+    Nd[t] <- sum(dead[1:M,t]) 
+    B[t] <- sum(d[1:M,t])         # Number of entries
+  } #t
+}
+)
+    
