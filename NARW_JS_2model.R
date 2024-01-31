@@ -8,6 +8,12 @@ library(MCMCvis)
 library(mcmcplots)
 library(nimble)
 
+# Create CSV of sighting histories
+obs <- whale.data$y[,-1]
+obs[obs==2] <- 0 #turn to 0/1s
+obs <- obs[which(apply(obs,1,sum) > 0),]  #limit to known individuals
+write.csv(obs,paste0("sightings_NARW_1990-",Year.Max,".csv"),row.names = F)
+
 # Parameters monitored
 params <- c(
   #"phiaf","phiam","phi0", "phi1","phi2","phi3","phi4", 
