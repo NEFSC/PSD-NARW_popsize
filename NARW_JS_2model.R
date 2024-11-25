@@ -1,8 +1,9 @@
 # code for fitting Jolly Seber model to North Atlantic right whale sightings (1990-)
 
 # Load the data/inputs----
+Year.Max <- 2023
 #source("NARW_JS_1data.R")
-load("NARW_JS_inputs.Rdata")
+load(paste0("./data/NARW_JS_inputs_",Year.Max,".Rdata"))
 library(parallel)
 library(MCMCvis)
 library(mcmcplots)
@@ -12,7 +13,7 @@ library(nimble)
 obs <- whale.data$y[,-1]
 obs[obs==2] <- 0 #turn to 0/1s
 obs <- obs[which(apply(obs,1,sum) > 0),]  #limit to known individuals
-write.csv(obs,paste0("sightings_NARW_1990-",Year.Max,".csv"),row.names = F)
+write.csv(obs,paste0("./data/sightings_NARW_1990-",Year.Max,".csv"),row.names = F)
 
 # Parameters monitored
 params <- c(
@@ -22,7 +23,7 @@ params <- c(
   "pi.female", "psi",             
   "sigma.phi", "sigma.p.i", "sigma.p.t",
   "epsilon.phi.t","epsilon.p.t",
-  "gamma", "entry", "N", "NF","NM", "B", "Nd","aliveT"
+  "gamma", "entry", "N", "NF","NM", "NadF", "B", "Nd","aliveT"
   )
 
 # multiple chain inits
@@ -40,7 +41,8 @@ run_MCMC_allcode <- function(info, whale.data, whale.constants, params,
                              n.iter, n.burnin, n.thin){
   library(nimble)
   
-  source("Pace2017_NARW_model.txt")
+  source("NARW_model_w_calfs.txt")
+  #source("Pace2017_NARW_model.txt")
   
   # testing only, not when running cluster
   # n.iter=2000; n.burnin=1000; n.thin=1
@@ -96,7 +98,8 @@ save(outL, run_MCMC_allcode, whale.data, whale.constants, #whale.tbl,
 # Examine output----
 load(file = paste0("./out/outL_NARW_1990-",Year.Max,".Rdata"))
 
-param.rm <- paste(c("N","B","entry","epsilon","gamma","aliveT"),collapse="|")
+param.rm <- paste(c("N", "NF","NM", "NadF","Nd", "B",
+                    "entry","epsilon","gamma","aliveT"),collapse="|")
 
 MCMCsummary(outL, round = 3, 
             excl = colnames(outL[[1]])[grep(pat = param.rm,colnames(outL[[1]]))])
