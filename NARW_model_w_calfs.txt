@@ -81,14 +81,12 @@ whale.code.pop <- nimbleCode( {
     } #t
   } #i
   # Calculate derived population parameters
-  # for (t in 1:(n.occasions - 1)) {
-  #   qgamma[t] <- 1 - gamma[t]
-  # }
-  # cprob[1] <- gamma[1]
-  # for (t in 2:(n.occasions - 1)) {
-  #   cprob[t] <- gamma[t] * prod(qgamma[1:(t-1)])
-  # } #t
-  # psi <- sum(cprob[1:(n.occasions-1)])            # Inclusion probability
+  cprob[1] <- gamma[1]
+  for (t in 2:(n.occasions - 1)) {
+    #cprob[t] <- gamma[t] * prod(qgamma[1:(t-1)])  #standard method
+    cprob[,t] <- calves[t]*phi_calf/M
+  } #t
+  psi <- sum(cprob[1:(n.occasions-1)])            # Inclusion probability
   # for (t in 1:(n.occasions - 1)) {
   #   entry[t] <- cprob[t] / psi      # Entry probability
   # } #t
