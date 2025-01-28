@@ -1,0 +1,13 @@
+{
+  "upload_type": "software", 
+  "description": "This software allows population estimation of North Atlantic right whales using NARWC sightings data.",
+  "title": "NARW Population Estimation",
+  "creators": [
+     {
+       "affiliation": "NOAA/NMFS/NEFSC",
+       "name": "Daniel W. Linden"
+     }
+  ],
+  "keywords": ["zenodo", "release", "archive"],
+  "license": "MIT"
+}
