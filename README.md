@@ -1,4 +1,5 @@
 # Population size estimation for North Atlantic right whales
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14757355.svg)](https://doi.org/10.5281/zenodo.14757355)
 
 This repository contains the data and scripts for fitting a Jolly-Seber model to North Atlantic right whale (NARW) sightings, using the general framework described by [Pace et al. (2017)](https://onlinelibrary.wiley.com/doi/full/10.1002/ece3.3406) and further refined by [Linden (2024)](https://www.biorxiv.org/content/10.1101/2024.10.11.617830v1).
 
