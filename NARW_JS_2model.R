@@ -8,6 +8,15 @@ library(parallel)
 library(MCMCvis)
 library(mcmcplots)
 library(nimble)
+library(dplyr)
+
+yrs <- 1990:Year.Max
+calves <- read.csv("./data/Calves_1990-present.csv")
+whale.data$calves <- (calves %>% filter(Year %in% yrs))$Tot.Calves
+
+# for calf-integrated model
+inits$gamma <- c(0.25,rep(NA,whale.constants$n.occasions-2))
+inits$phi_calf <- 0.95
 
 # Create CSV of sighting histories
 obs <- whale.data$y[,-1]
@@ -45,7 +54,7 @@ run_MCMC_allcode <- function(info, whale.data, whale.constants, params,
   #source("Pace2017_NARW_model.txt")
   
   # testing only, not when running cluster
-  # n.iter=2000; n.burnin=1000; n.thin=1
+  # n.iter=200; n.burnin=100; n.thin=1
   # info <- info[[1]]
   
   print(Sys.time())
