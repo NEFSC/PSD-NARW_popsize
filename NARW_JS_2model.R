@@ -1,7 +1,7 @@
 # code for fitting Jolly Seber model to North Atlantic right whale sightings (1990-)
 
 # Load the data/inputs----
-Year.Max <- 2023
+Year.Max <- 2024
 #source("NARW_JS_1data.R")
 load(paste0("./data/NARW_JS_inputs_",Year.Max,".Rdata"))
 library(parallel)
@@ -11,8 +11,12 @@ library(nimble)
 library(dplyr)
 
 yrs <- 1990:Year.Max
-calves <- read.csv("./data/Calves_1990-present.csv")
-whale.data$calves <- (calves %>% filter(Year %in% yrs))$Tot.Calves
+calves <- read.csv("./data/Calves_Observed_1990-present.csv")
+
+whale.data$calves <- (calves %>% filter(Year %in% yrs) %>%
+                        #only include calves not known to be lost
+                        mutate(Recruits = Tot.Calves-Known.Losses)
+                      )$Recruits
 
 # for calf-integrated model
 inits$gamma <- c(0.25,rep(NA,whale.constants$n.occasions-2))
@@ -28,11 +32,12 @@ write.csv(obs,paste0("./data/sightings_NARW_1990-",Year.Max,".csv"),row.names = 
 params <- c(
   #"phiaf","phiam","phi0", "phi1","phi2","phi3","phi4", 
   "b0","b.age", "b.female","b.regime","a0","a.female",
-  #"pcap1", "pcap2", 
-  "pi.female", "psi",             
+  #"pcap1", "pcap2", "psi",
+  "pi.female", "phi_calf",           
   "sigma.phi", "sigma.p.i", "sigma.p.t",
   "epsilon.phi.t","epsilon.p.t",
-  "gamma", "entry", "N", "NF","NM", "NadF", "B", "Nd","aliveT"
+  "N", "NF", "NM", "NadF", "Nd",
+  "gamma", "B", "aliveT" #,"z"
   )
 
 # multiple chain inits
@@ -54,7 +59,7 @@ run_MCMC_allcode <- function(info, whale.data, whale.constants, params,
   #source("Pace2017_NARW_model.txt")
   
   # testing only, not when running cluster
-  # n.iter=200; n.burnin=100; n.thin=1
+  # n.iter=2000; n.burnin=1000; n.thin=1
   # info <- info[[1]]
   
   print(Sys.time())
@@ -86,8 +91,8 @@ run_MCMC_allcode <- function(info, whale.data, whale.constants, params,
 this_cluster <- makeCluster(3)
 
 ## Basic MCMC parameters (~7.4hrs for 25k)
-n.iterX   <-  25000  #600000
-n.burninX <-  5000  #20000
+n.iterX   <-  25000
+n.burninX <-  5000
 n.thinX <- 5
 
 (start <- Sys.time())
@@ -107,8 +112,7 @@ save(outL, run_MCMC_allcode, whale.data, whale.constants, #whale.tbl,
 # Examine output----
 load(file = paste0("./out/outL_NARW_1990-",Year.Max,".Rdata"))
 
-param.rm <- paste(c("N", "NF","NM", "NadF","Nd", "B",
-                    "entry","epsilon","gamma","aliveT"),collapse="|")
+param.rm <- paste(c("N","B","entry","epsilon","gamma","aliveT"),collapse="|")
 
 MCMCsummary(outL, round = 3, 
             excl = colnames(outL[[1]])[grep(pat = param.rm,colnames(outL[[1]]))])

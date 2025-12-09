@@ -83,20 +83,20 @@ whale.code.pop <- nimbleCode( {
   # Calculate derived population parameters
   cprob[1] <- gamma[1]
   for (t in 2:(n.occasions - 1)) {
-    #cprob[t] <- gamma[t] * prod(qgamma[1:(t-1)])  #standard method
+    #cprob[t] <- gamma[t] * prod(qgamma[1:(t-1)]) # Standard method
     cprob[t] <- calves[t]*phi_calf/M
   } #t
   psi <- sum(cprob[1:(n.occasions-1)])            # Inclusion probability
-  for (t in 1:(n.occasions - 1)) {
-    entry[t] <- cprob[t] / psi      # Entry probability
-  } #t
+  # for (t in 1:(n.occasions - 1)) {
+  #   entryprob[t] <- cprob[t] / psi      # Entry probability
+  # } #t
   for (i in 1:M) {
     for (t in 2:n.occasions) {
       al[i,t-1] <- equals(z[i,t], 2)
       dead[i,t-1] <- equals(z[i,t], 3) * equals(z[i,t-1], 2)
     } #t
     for (t in 1:(n.occasions - 1)) {
-      d[i,t] <- equals(z[i,t] - al[i,t], 0)
+      entry[i,t] <- equals(z[i,t] - al[i,t], 0)
     } #t
     aliveT[i] <- al[i,(n.occasions-1)]
   } #i
@@ -106,7 +106,7 @@ whale.code.pop <- nimbleCode( {
     NadF[t] <- sum(al[1:M,t] * Sex[1:M] * Proven[1:M,t]) 
     NM[t] <- sum(al[1:M,t] * (1-Sex[1:M]))
     Nd[t] <- sum(dead[1:M,t]) 
-    B[t] <- sum(d[1:M,t])         # Number of entries
+    B[t] <- sum(entry[1:M,t])         # Number of entries
   } #t
 }
 )

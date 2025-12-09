@@ -1,6 +1,9 @@
 # Population size estimation for North Atlantic right whales
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14757355.svg)](https://doi.org/10.5281/zenodo.14757355)
 
-This repository contains the data and scripts for fitting a Jolly-Seber model to North Atlantic right whale (NARW) sightings, using the general framework described by [Pace et al. (2017)](https://onlinelibrary.wiley.com/doi/full/10.1002/ece3.3406) and further refined by [Linden (2024)](https://www.biorxiv.org/content/10.1101/2024.10.11.617830v1).
+This repository contains the data and scripts for fitting a Jolly-Seber model to North Atlantic right whale (NARW) sightings, using the general framework described by [Pace et al. (2017)](https://onlinelibrary.wiley.com/doi/full/10.1002/ece3.3406) and further refined by [Linden (2025)](https://doi.org/10.1002/ece3.71035).
+
+The summary of methods and parameter estimates is published in the NOAA Technical Memorandum series. The latest report can be found [here](https://doi.org/10.25923/ha3d-2f70).
 
 **Disclaimer:** *This repository is a scientific product and is not official communication of the National Oceanic and Atmospheric Administration, or the United States Department of Commerce. All NOAA GitHub project code is provided on an 'as is' basis and the user assumes responsibility for its use. Any claims against the Department of Commerce or Department of Commerce bureaus stemming from the use of this GitHub project will be governed by all applicable Federal law. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by DOC or the United States Government.*
